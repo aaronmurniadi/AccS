@@ -78,3 +78,18 @@ dependencies {
     implementation "com.github.CrazyBoyFeng.AndroidXPreferenceExtensions:edittext:$axpeVersion"
     implementation "com.github.CrazyBoyFeng.AndroidXPreferenceExtensions:numberpicker:$axpeVersion"
 }
+
+tasks.register('buildAllVariants') {
+    dependsOn[assembleDebug, assembleRelease]
+    description = "Builds all variants (debug and release)"
+}
+
+tasks.register('buildDebug') {
+    dependsOn assembleDebug
+    description = "Builds the debug variant"
+}
+
+tasks.register('buildRelease') {
+    dependsOn assembleRelease
+    description = "Builds the release variant"
+}
