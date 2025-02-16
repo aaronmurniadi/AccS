@@ -1,10 +1,10 @@
 name: Build APK and Release
 
-#on:
-#  push:
-#    branches:
-#      - main
-#  workflow_dispatch:
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   build:
@@ -29,19 +29,30 @@ jobs:
         run: |
           VERSION_NAME=$(grep -o "versionName '.*'" build.gradle | cut -d "'" -f 2)
           echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
-          echo "Version Name: $VERSION_NAME" # Optional: Print for debugging
+          echo "Version Name: $VERSION_NAME"
 
-      - name: Build with Gradle
-        run: ./gradlew build
+      - name: Clean build
+        run: ./gradlew clean
 
-      - name: Upload a Build Artifact
+      - name: Build with Gradle (All Variants)
+        run: ./gradlew buildAllVariants
+
+      - name: Upload Debug APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug.apk
-          path: build/outputs/apk/debug/app-debug.apk
+          name: AccS-v${{ env.VERSION_NAME }}-debug.apk
+          path: build/outputs/apk/debug/AccS-v${{ env.VERSION_NAME }}-debug.apk
+
+      - name: Upload Release APK Artifact
+        uses: actions/upload-artifact@v4
+        if: github.ref == 'refs/heads/main'
+        with:
+          name: AccS-v${{ env.VERSION_NAME }}-release.apk
+          path: build/outputs/apk/release/AccS-v${{ env.VERSION_NAME }}-release.apk
 
       - name: Create Release
         id: create_release
+        if: github.ref == 'refs/heads/main'
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -49,18 +60,31 @@ jobs:
           tag_name: v${{ env.VERSION_NAME }}
           release_name: Automated build v${{ env.VERSION_NAME }}
           draft: false
-          prerelease: true
+          prerelease: false
 
       - name: Set upload_url as an environment variable
+        if: github.ref == 'refs/heads/main'
         run: echo "UPLOAD_URL=${{ steps.create_release.outputs.upload_url }}" >> $GITHUB_ENV
 
       - name: Upload Release Asset
         id: upload-release-asset
+        if: github.ref == 'refs/heads/main'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ env.UPLOAD_URL }}
-          asset_path: build/outputs/apk/debug/app-debug.apk
-          asset_name: app-debug.apk
+          asset_path: build/outputs/apk/release/AccS-v${{ env.VERSION_NAME }}-release.apk
+          asset_name: AccS-v${{ env.VERSION_NAME }}-release.apk
+          asset_content_type: application/zip
+
+      - name: Upload Debug APK to Release (Optional - for testing)
+        if: github.ref == 'refs/heads/main' && steps.create_release.outcome == 'success'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ env.UPLOAD_URL }}
+          asset_path: build/outputs/apk/debug/AccS-v${{ env.VERSION_NAME }}-debug.apk
+          asset_name: AccS-v${{ env.VERSION_NAME }}-debug.apk
           asset_content_type: application/zip
