@@ -12,9 +12,9 @@
 
     <string name="about">About</string>
 
-    <string name="accs">ACCS</string>
+    <string name="accs">AccS</string>
     <string name="acc">ACC</string>
-    <string name="fork_by">Forked by</string>
+    <string name="developed_by">Forked and developed by</string>
 
     <string name="battery">Battery</string>
     <string name="capacity">Capacity</string>

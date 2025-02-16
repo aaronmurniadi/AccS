@@ -73,7 +73,7 @@
                 android:data="https://github.com/VR-25/acc" />
         </Preference>
         <Preference
-            app:title="@string/fork_by"
+            app:title="@string/developed_by"
             app:summary="@string/developer_name">
             <intent
                 android:action="android.intent.action.VIEW"
