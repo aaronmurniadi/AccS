@@ -80,7 +80,8 @@ dependencies {
 }
 
 tasks.register('buildAllVariants') {
-    dependsOn[assembleDebug, assembleRelease]
+    dependsOn assembleDebug
+    dependsOn assembleRelease
     description = "Builds all variants (debug and release)"
 }
 
