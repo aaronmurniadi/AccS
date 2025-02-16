@@ -11,12 +11,12 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.2.1'
+        classpath 'com.android.tools.build:gradle:7.2.2'
         classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.21'
     }
 }
 
-repositories {  // Repositories for application dependencies
+repositories {
     google()
     mavenCentral()
     maven {
@@ -25,12 +25,12 @@ repositories {  // Repositories for application dependencies
 }
 
 android {
-    compileSdkVersion 32
+    compileSdkVersion 33
 
     defaultConfig {
         applicationId 'com.acc.settings'
         minSdkVersion 14
-        targetSdkVersion 32
+        targetSdkVersion 33
         versionCode 20231016
         versionName '2023.10.16'
         resValue 'string', 'version_name', versionName
@@ -40,11 +40,33 @@ android {
         release {
             minifyEnabled true
             shrinkResources true
+            applicationVariants.all { variant ->
+                if (variant.buildType.name == "release") {
+                    variant.outputs.all { output ->
+                        outputFileName = "AccS-v${versionName}-${variant.buildType.name}.apk"
+                    }
+                }
+            }
+        }
+        debug {
+            applicationVariants.all { variant ->
+                if (variant.buildType.name == "debug") {
+                    variant.outputs.all { output ->
+                        outputFileName = "AccS-v${versionName}-${variant.buildType.name}.apk"
+                    }
+                }
+            }
         }
     }
 
+
     kotlinOptions {
         jvmTarget = '11'
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
 }
 
