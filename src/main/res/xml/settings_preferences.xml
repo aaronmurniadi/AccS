@@ -73,7 +73,14 @@
                 android:data="https://github.com/VR-25/acc" />
         </Preference>
         <Preference
-            app:title="@string/developed_by"
+            app:title="@string/original_developer"
+            app:summary="@string/original_creator">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="https://github.com/CrazyBoyFeng"/>
+        </Preference>
+        <Preference
+            app:title="@string/fork_developer"
             app:summary="@string/developer_name">
             <intent
                 android:action="android.intent.action.VIEW"
