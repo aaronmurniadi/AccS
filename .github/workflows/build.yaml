@@ -1,0 +1,66 @@
+name: Build APK and Release
+
+#on:
+#  push:
+#    branches:
+#      - main
+#  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.1.0
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3.13.0
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+
+      - name: Grant execute permissions for gradlew
+        run: chmod +x ./gradlew
+
+      - name: Set Version Name as Environment Variable
+        id: set_version_name
+        shell: bash
+        run: |
+          VERSION_NAME=$(grep -o "versionName '.*'" build.gradle | cut -d "'" -f 2)
+          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
+          echo "Version Name: $VERSION_NAME" # Optional: Print for debugging
+
+      - name: Build with Gradle
+        run: ./gradlew build
+
+      - name: Upload a Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug.apk
+          path: build/outputs/apk/debug/app-debug.apk
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ env.VERSION_NAME }}
+          release_name: Automated build v${{ env.VERSION_NAME }}
+          draft: false
+          prerelease: true
+
+      - name: Set upload_url as an environment variable
+        run: echo "UPLOAD_URL=${{ steps.create_release.outputs.upload_url }}" >> $GITHUB_ENV
+
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ env.UPLOAD_URL }}
+          asset_path: build/outputs/apk/debug/app-debug.apk
+          asset_name: app-debug.apk
+          asset_content_type: application/zip
