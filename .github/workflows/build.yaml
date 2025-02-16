@@ -8,6 +8,7 @@ on:
 
 jobs:
   build:
+    permissions: write-all
     runs-on: ubuntu-latest
 
     steps:
@@ -34,18 +35,18 @@ jobs:
       - name: Build with Gradle (All Variants)
         run: ./gradlew buildAllVariants
 
-      - name: Upload Debug APK Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: AccS-v${{ env.VERSION_NAME }}-debug.apk
-          path: build/outputs/apk/debug/AccS-v${{ env.VERSION_NAME }}-debug.apk
-
       - name: Upload Release APK Artifact
         uses: actions/upload-artifact@v4
         if: github.ref == 'refs/heads/main'
         with:
           name: AccS-v${{ env.VERSION_NAME }}-release.apk
           path: build/outputs/apk/release/AccS-v${{ env.VERSION_NAME }}-release.apk
+
+      - name: Upload Debug APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AccS-v${{ env.VERSION_NAME }}-debug.apk
+          path: build/outputs/apk/debug/AccS-v${{ env.VERSION_NAME }}-debug.apk
 
       - name: Create Release
         id: create_release
@@ -62,8 +63,8 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: echo "UPLOAD_URL=${{ steps.create_release.outputs.upload_url }}" >> $GITHUB_ENV
 
-      - name: Upload Release Asset
-        id: upload-release-asset
+      - name: Upload Release APK
+        id: upload-release-apk
         if: github.ref == 'refs/heads/main'
         uses: actions/upload-release-asset@v1
         env:
@@ -74,7 +75,8 @@ jobs:
           asset_name: AccS-v${{ env.VERSION_NAME }}-release.apk
           asset_content_type: application/zip
 
-      - name: Upload Debug APK to Release (Optional - for testing)
+      - name: Upload Debug APK
+        id: upload-debug-apk
         if: github.ref == 'refs/heads/main' && steps.create_release.outcome == 'success'
         uses: actions/upload-release-asset@v1
         env:
